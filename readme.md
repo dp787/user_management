@@ -8,7 +8,7 @@ Welcome to the User Management System project - an epic open-source adventure cr
 
 ### [Instructor Video - Project Overview and Tips](https://youtu.be/gairLNAp6mA) 🎥
 
-- [Introduction to the system features and overview of the project - please read](system_documentation.md) 📚
+- [Introductions to the system features and overview of the project - please read](system_documentation.md) 📚
 - [Project Setup Instructions](setup.md) ⚒️
 - [Features to Select From](features.md) 🛠️
 - [About the Project](about.md)🔥🌟
