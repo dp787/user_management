@@ -2,6 +2,7 @@ from builtins import bool, int, str
 from datetime import datetime
 from enum import Enum
 import uuid
+import secrets
 from sqlalchemy import (
     Column, String, Integer, DateTime, Boolean, func, Enum as SQLAlchemyEnum
 )
@@ -49,6 +50,7 @@ class User(Base):
         verify_email(): Marks the user's email as verified.
         has_role(role_name): Checks if the user has a specified role.
         update_professional_status(status): Updates the professional status and logs the update time.
+        generate_verification_token(): Generates a verification token for email verification.
     """
     __tablename__ = "users"
     __mapper_args__ = {"eager_defaults": True}
@@ -87,6 +89,7 @@ class User(Base):
 
     def verify_email(self):
         self.email_verified = True
+        self.verification_token = None
 
     def has_role(self, role_name: UserRole) -> bool:
         return self.role == role_name
@@ -95,3 +98,7 @@ class User(Base):
         """Updates the professional status and logs the update time."""
         self.is_professional = status
         self.professional_status_updated_at = func.now()
+
+    def generate_verification_token(self):
+        """Generates a verification token."""
+        self.verification_token = secrets.token_urlsafe(32)
