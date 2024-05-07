@@ -51,8 +51,3 @@ def require_role(role: str):
         return current_user
     return role_checker
 
-def require_role_admin(current_user: dict = Depends(get_current_user)):
-    """Dependency that checks if the user is an administrator."""
-    if current_user["role"] != "ADMIN":
-        raise HTTPException(status_code=403, detail="Only administrators can access this resource")
-    return current_user
