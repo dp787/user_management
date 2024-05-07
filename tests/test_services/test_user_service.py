@@ -225,3 +225,4 @@ async def test_access_user_profile_info(db_session, user):
     assert retrieved_user.email == user.email, "User's email should match"
     assert retrieved_user.role == user.role, "User's role should match"
 
+    
