@@ -4,12 +4,15 @@ updating, and deleting (CRUD) user information. It uses OAuth2 with Password Flo
 users can perform certain operations. Additionally, the file showcases the integration of FastAPI with SQLAlchemy for asynchronous
 database operations, enhancing performance by non-blocking database calls.
 
+
 The implementation emphasizes RESTful API principles, with endpoints for each CRUD operation and the use of HTTP status codes
 and exceptions to communicate the outcome of operations. It introduces the concept of HATEOAS (Hypermedia as the Engine of
 Application State) by including navigational links in API responses, allowing clients to discover other related operations dynamically.
 
+
 OAuth2PasswordBearer is employed to extract the token from the Authorization header and verify the user's identity, providing a layer
 of security to the operations that manipulate user data.
+
 
 Key Highlights:
 - Use of FastAPI's Dependency Injection system to manage database sessions and user authentication.
@@ -17,6 +20,8 @@ Key Highlights:
 - Implements HATEOAS by generating dynamic links for user-related actions, enhancing API discoverability.
 - Utilizes OAuth2PasswordBearer for securing API endpoints, requiring valid access tokens for operations.
 """
+
+
 
 
 from fastapi import APIRouter, Depends, HTTPException, Response, status, Request
@@ -31,16 +36,20 @@ from app.services.jwt_service import create_access_token
 from app.utils.link_generation import create_user_links, generate_pagination_links
 from app.dependencies import get_settings
 from app.services.email_service import EmailService
+from uuid import UUID
+
 
 router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 settings = get_settings()
+
 
 @router.get("/users/{user_id}", response_model=UserResponse, name="get_user", tags=["User Management Requires (Admin or Manager Roles)"])
 async def get_user(user_id: UUID, request: Request, db: AsyncSession = Depends(get_db), token: str = Depends(oauth2_scheme), current_user: dict = Depends(require_role(["ADMIN", "MANAGER"]))):
     user = await UserService.get_by_id(db, user_id)
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
 
     return UserResponse.model_construct(
         id=user.id,
@@ -59,12 +68,15 @@ async def get_user(user_id: UUID, request: Request, db: AsyncSession = Depends(g
         links=create_user_links(user.id, request)  
     )
 
+
 # Additional endpoints for update, delete, create, and list users follow a similar pattern, using
 # asynchronous database operations, handling security with OAuth2PasswordBearer, and enhancing response
 # models with dynamic HATEOAS links.
 
+
 # This approach not only ensures that the API is secure and efficient but also promotes a better client
 # experience by adhering to REST principles and providing self-discoverable operations.
+
 
 @router.put("/users/{user_id}", response_model=UserResponse, name="update_user", tags=["User Management Requires (Admin or Manager Roles)"])
 async def update_user(user_id: UUID, user_update: UserUpdate, request: Request, db: AsyncSession = Depends(get_db), token: str = Depends(oauth2_scheme), current_user: dict = Depends(require_role(["ADMIN", "MANAGER"]))):
@@ -72,6 +84,7 @@ async def update_user(user_id: UUID, user_update: UserUpdate, request: Request, 
     updated_user = await UserService.update(db, user_id, user_data)
     if not updated_user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
 
     return UserResponse.model_construct(
         id=updated_user.id,
@@ -91,6 +104,8 @@ async def update_user(user_id: UUID, user_update: UserUpdate, request: Request, 
     )
 
 
+
+
 @router.delete("/users/{user_id}", status_code=status.HTTP_204_NO_CONTENT, name="delete_user", tags=["User Management Requires (Admin or Manager Roles)"])
 async def delete_user(user_id: UUID, db: AsyncSession = Depends(get_db), token: str = Depends(oauth2_scheme), current_user: dict = Depends(require_role(["ADMIN", "MANAGER"]))):
     success = await UserService.delete(db, user_id)
@@ -100,16 +115,20 @@ async def delete_user(user_id: UUID, db: AsyncSession = Depends(get_db), token: 
 
 
 
+
+
+
 @router.post("/users/", response_model=UserResponse, status_code=status.HTTP_201_CREATED, tags=["User Management Requires (Admin or Manager Roles)"], name="create_user")
 async def create_user(user: UserCreate, request: Request, db: AsyncSession = Depends(get_db), email_service: EmailService = Depends(get_email_service), token: str = Depends(oauth2_scheme), current_user: dict = Depends(require_role(["ADMIN", "MANAGER"]))):
     existing_user = await UserService.get_by_email(db, user.email)
     if existing_user:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email already exists")
-    
+   
     created_user = await UserService.create(db, user.model_dump(), email_service)
     if not created_user:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to create user")
-    
+   
+
 
     return UserResponse.model_construct(
         id=created_user.id,
@@ -127,6 +146,8 @@ async def create_user(user: UserCreate, request: Request, db: AsyncSession = Dep
     )
 
 
+
+
 @router.get("/users/", response_model=UserListResponse, tags=["User Management Requires (Admin or Manager Roles)"])
 async def list_users(
     request: Request,
@@ -138,12 +159,13 @@ async def list_users(
     total_users = await UserService.count(db)
     users = await UserService.list_users(db, skip, limit)
 
+
     user_responses = [
         UserResponse.model_validate(user) for user in users
     ]
-    
+   
     pagination_links = generate_pagination_links(request, skip, limit, total_users)
-    
+   
     # Construct the final response with pagination details
     return UserListResponse(
         items=user_responses,
@@ -152,4 +174,8 @@ async def list_users(
         size=len(user_responses),
         links=pagination_links
     )
+
+
+
+
 
