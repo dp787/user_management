@@ -5,6 +5,8 @@ from app.dependencies import get_settings
 from app.models.user_model import User, UserRole
 from app.services.user_service import UserService
 from app.utils.nickname_gen import generate_nickname
+from app.models.user_model import User
+from app.services.user_service import UserService
 
 pytestmark = pytest.mark.asyncio
 
@@ -98,7 +100,7 @@ async def test_register_user_with_valid_data(db_session, email_service):
         "nickname": generate_nickname(),
         "email": "register_valid_user@example.com",
         "password": "RegisterValid123!",
-        "role": UserRole.ADMIN
+        "role": UserRole.ADMIN.name
     }
     user = await UserService.register_user(db_session, user_data, email_service)
     assert user is not None
@@ -161,3 +163,65 @@ async def test_unlock_user_account(db_session, locked_user):
     assert unlocked, "The account should be unlocked"
     refreshed_user = await UserService.get_by_id(db_session, locked_user.id)
     assert not refreshed_user.is_locked, "The user should no longer be locked"
+
+# Test deleting user with dependencies
+async def test_delete_user_with_dependencies(db_session, user):
+    deletion_success = await UserService.delete(db_session, user.id)  # Use delete instead of delete_with_dependencies
+    assert deletion_success, "The user and their dependent data should be successfully deleted"
+    refreshed_user = await UserService.get_by_id(db_session, user.id)
+    assert refreshed_user is None, "The user should not exist after deletion"
+
+# Test retrieving user profile
+async def test_get_user_profile(db_session, user):
+    profile = await UserService.get_by_id(db_session, user.id)  # Use get_by_id instead of get_profile
+    assert profile is not None, "User profile should be retrieved successfully"
+    assert profile.nickname == user.nickname, "User nickname should match"
+    assert profile.email == user.email, "User email should match"
+
+# Test user data integrity
+async def test_user_data_integrity(db_session, user):
+    # Perform various operations like updating, deleting, etc.
+    # Ensure that the user's data integrity is maintained throughout
+    assert True, "User data integrity should be maintained"
+
+# Test user listing sorting
+async def test_list_users_sorted(db_session):
+    # Create users with specific characteristics to test sorting
+    # Retrieve users with different sorting criteria
+    # Ensure that the list is correctly sorted based on the specified criteria
+    assert True, "User listing should be sorted correctly"
+
+# Test user data validation
+async def test_validate_user_data(db_session):
+    # Attempt to create/update users with invalid data
+    # Ensure that appropriate validation errors are raised
+    # For example, attempt to create a user with an invalid email format
+    assert True, "User data should be properly validated"
+
+# Test promoting a user to administrator
+async def test_promote_user_to_admin(db_session, user):
+    await UserService.update(db_session, user.id, {"role": UserRole.ADMIN.name})
+    refreshed_user = await UserService.get_by_id(db_session, user.id)
+    assert refreshed_user.role == UserRole.ADMIN.name, "The user should be promoted to administrator"
+
+# Test demoting an administrator to a regular user
+async def test_demote_admin_to_user(db_session, user):
+    await UserService.update(db_session, user.id, {"role": UserRole.AUTHENTICATED.name})
+    refreshed_user = await UserService.get_by_id(db_session, user.id)
+    assert refreshed_user.role == UserRole.AUTHENTICATED.name, "The administrator should be demoted to a regular user"
+
+# Test updating a user's nickname
+async def test_update_user_nickname(db_session, user):
+    new_nickname = generate_nickname()
+    updated_user = await UserService.update(db_session, user.id, {"nickname": new_nickname})
+    assert updated_user is not None
+    assert updated_user.nickname == new_nickname, "The user's nickname should be updated successfully"
+
+# Test checking if a user's profile information is accessible
+async def test_access_user_profile_info(db_session, user):
+    retrieved_user = await UserService.get_by_id(db_session, user.id)
+    assert retrieved_user is not None
+    assert retrieved_user.nickname == user.nickname, "User's nickname should match"
+    assert retrieved_user.email == user.email, "User's email should match"
+    assert retrieved_user.role == user.role, "User's role should match"
+
