@@ -37,10 +37,7 @@ from app.utils.link_generation import create_user_links, generate_pagination_lin
 from app.dependencies import get_settings
 from app.services.email_service import EmailService
 from uuid import UUID
-<<<<<<< HEAD
 
-=======
->>>>>>> bcbecb6863da750a0d56c6e25686b563b4690f06
 
 router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
@@ -177,8 +174,6 @@ async def list_users(
         size=len(user_responses),
         links=pagination_links
     )
-
-
 
 
 

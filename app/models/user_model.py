@@ -100,10 +100,7 @@ class User(Base):
     def verify_email(self):
         self.email_verified = True
         self.verification_token = None
-<<<<<<< HEAD
 
-=======
->>>>>>> bcbecb6863da750a0d56c6e25686b563b4690f06
 
     def has_role(self, role_name: UserRole) -> bool:
         return self.role == role_name
@@ -114,15 +111,8 @@ class User(Base):
         self.is_professional = status
         self.professional_status_updated_at = func.now()
 
-<<<<<<< HEAD
 
     def generate_verification_token(self):
         """Generates a verification token."""
         self.verification_token = secrets.token_urlsafe(32)
 
-
-=======
-    def generate_verification_token(self):
-        """Generates a verification token."""
-        self.verification_token = secrets.token_urlsafe(32)
->>>>>>> bcbecb6863da750a0d56c6e25686b563b4690f06
