@@ -1,7 +1,7 @@
 # Define a base stage with a Debian Bookworm base image that includes the latest glibc update
 FROM python:3.12-bookworm as base
 
-# Set environment variables
+# Set the environment variables
 ENV PYTHONUNBUFFERED=1 \
     PYTHONFAULTHANDLER=1 \
     PIP_NO_CACHE_DIR=true \
